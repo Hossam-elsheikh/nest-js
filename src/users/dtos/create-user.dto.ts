@@ -16,7 +16,7 @@ export class CreateUserDTO {
   firstName: string;
 
   @IsString()
-  @IsOptional() // you can notice here that you've the flexiblity to validate an optional value
+  @IsOptional() 
   @MinLength(3)
   @MaxLength(96)
   lastName?: string;

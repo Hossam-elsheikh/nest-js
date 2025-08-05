@@ -1,17 +1,30 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // instead of passing it on each request coming
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // insures that any data not in dto wo'nt be passed to the controller
-      forbidNonWhitelisted:true, // forbids and throws an error if data not in dto passed
-      transform: true // transform the incoming request to an instance to dto class after validation
+      whitelist: true, 
+      forbidNonWhitelisted: true, 
+      transform: true, 
     }),
   );
-  await app.listen(process.env.PORT ?? 3000);
+
+  // swagger configuration
+  const config = new DocumentBuilder()
+    .setTitle('Blog API')
+    .setDescription('use this base API url http://localhost:3001')
+    .setTermsOfService('link to terms of service') // provide a link
+    .setLicense('FREE License','license docs link')
+    .addServer('http://localhost:3001')
+    .setVersion('1.0')
+    .build();
+  // instantiate document
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

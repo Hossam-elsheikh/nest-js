@@ -1,44 +1,37 @@
-# 01 Basics
+# 02 Dependency Injection and Documentation
 
 ## In This Branch
-
-- Creating modules and controllers manually or using the CLI:  
-  `nest generate [type] [name]`
-- Managing incoming requests with controllers
-- Accessing route parameters, query parameters, headers, IP, and request body
-- Using built-in pipes for validation and transformation
-- Creating DTOs and using the `class-validator` package for enhanced validations
-- Installing the `class-transformer` package to transform plain JavaScript objects into class instances (Nest does this automatically)
-- Activating global pipes instead of applying them on each request individually
-- Using the `@nestjs/mapped-types` library
-
+  - creating a provider/service and inject it in the controller [intramodular_dependency]
+  - moving the business logic to the service
+  - inject users service inside posts service [intermodular_dependency]
+  - using forwardRef function to apply [circular_dependency]
+  - documenting code with compodoc, as well as api with swagger
+  - validating arrays 
+  - working with nested dtos and validating using ValidateNested with Type decorators
 ---
 
 ### File Changes in This Branch
-
-- Created a `users` directory containing:
-  - `users.module.ts`
-  - `users.controller.ts`
-- Created a `dtos` directory inside `users`, with:
-  - `create-user.dto.ts`
-  - `get-users-params.ts`
-  - `patch-user.dto.ts`
-- Registered a global `ValidationPipe` in `main.ts` instead of applying it per request
-
+  - delete sec/01-Basics branch code from users.controller.ts
+  - delete some explanation comments
+  - create providers dir and users.service.ts file in users dir
+  - create posts and auth module, dtos, enums, controller and service
+  - enabling swagger in main.ts file
+  - adding "doc" script in package.json file 
+  - creating documentation with compodoc 
+  - applying doc coverage in users.service.ts file through comments
 ---
 
 ### Notes
-
-- `app.module.ts` should be placed directly inside the `src` directory so CLI generators work correctly
-- Use the `--no-spec` flag to skip generating spec (test) files when using the CLI
-- To create an optional path/route parameter (in Express 5), wrap it like this:  
-  `users{/:id}/something`
-- NestJS provides access to various elements of a request (e.g. params, query, headers) individually, without requiring full request hijacking
-- **Slide 001**: NestJS simplifies error handling and validation via filters and exceptions, saving time and boilerplate
-- `class-transformer` and `class-validator` often work together to enable declarative input validation and transformation—especially useful with DTOs
-- Curious about how decorators and validation work under the hood? Check the `reflect-metadata` package, which Nest uses internally
-- Set `whitelist: true` in the global `ValidationPipe` to strip any properties not defined in the DTO, protecting against malicious input
-- Set `forbidNonWhitelisted: true` to explicitly throw an error when unexpected properties are present in the request
-- Set `transform: true` to automatically transform incoming JSON payloads into actual instances of DTO classes—enabling proper type handling
-- You can’t validate optional parameters directly with pipes—use a DTO, even for a single optional field
-- To avoid duplicating validation logic between `create-user` and `patch-user` DTOs, use `@nestjs/mapped-types` to extend the former and automatically mark fields optional
+  - after spending time manually creating modules, controllers, and services, try to get used to nest cli to avoid missing imports
+  - you don't need extra steps of connecting 2 modules while dealing with orm later
+  - you can only export providers/services through exports in the module, and you import the whole module in the target module
+  - importing the whole module in the target module doesn't mean that it's all imported, it only imports the exported services only
+  - when 2 modules needs each other you can't export and import each in another, because it's circular dependncy, instead you import them with forwardRef function, and inject services with forwardRef as well
+  - nest auto generate documentation for us using [swagger] for api documentaion, and [COMPODOC] for code documentaion, after a certain config
+  - api doc is hosted with the api, code doc is generated inside the app
+  - newer versions of swagger auto group routes, so you don't need to use ApiTags to do this
+  - consider using @ApiOperation, @ApiQuery, @ApiProperty and @ApiPropertyOptional to add details to the endpoints 
+  - @Type() decorator used in nested dtos validations creats an instance of the dto to match and validate once the request come, it's crucial
+  - PartialType imported from the mapped-types won't inherits swagger configs in inherited dto, so import PartialType from swagger instead
+  - code documentation with compodoc is done automatically with compodoc which relies on JSDoc.
+  - documentation coverage in compodoc will show 0% in every file because it expect you to put comments
