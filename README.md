@@ -14,19 +14,6 @@
 
 ---
 
-### File Changes in This Branch
-
-- Created a `users` directory containing:
-  - `users.module.ts`
-  - `users.controller.ts`
-- Created a `dtos` directory inside `users`, with:
-  - `create-user.dto.ts`
-  - `get-users-params.ts`
-  - `patch-user.dto.ts`
-- Registered a global `ValidationPipe` in `main.ts` instead of applying it per request
-
----
-
 ### Notes
 
 - `app.module.ts` should be placed directly inside the `src` directory so CLI generators work correctly
