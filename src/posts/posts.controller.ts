@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { PostsService } from './providers/posts.service';
 import { CreatePostDTO } from './dtos/create-post.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -10,8 +10,8 @@ export class PostsController {
 
   }
   @Get('{/:id}') // an optional param
-  public getPosts(@Param('userId') userId:string){
-    return this.postsService.findAll(userId)
+  public getPosts(){
+    return this.postsService.findAll()
   }
 
   @ApiOperation({
@@ -21,9 +21,17 @@ export class PostsController {
     status:201,
     description:'post createed succesfully'
   })
+
+  // one2one 
+  // @Post()
+  // public createPost(@Body() createPostDto:CreatePostDTO){
+  //   return this.postsService.createPost(createPostDto)
+  // }
+
+  // one2many
   @Post()
-  public createPost(@Body() createPostDto:CreatePostDTO){
-    return createPostDto
+  public createPostByUser(@Body() createPostDto:CreatePostDTO){
+    return this.postsService.createPostByUser(createPostDto)
   }
 
  @ApiOperation({
@@ -35,6 +43,11 @@ export class PostsController {
   })
   @Patch()
   public uodatePost(@Body() patchPostDto:PatchPostDTO){
-    return patchPostDto
+    return this.postsService.update(patchPostDto)
+  }
+
+  @Delete()
+  public deletePost(@Query('id',ParseIntPipe) id:number){
+    return this.postsService.delete(id)
   }
 }

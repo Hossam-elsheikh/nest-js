@@ -9,7 +9,7 @@ export class AuthService {
   ) {}
   public login(email: string, pwd: string, id: string) {
     // we need user service here and auth service there in user service (circular dependedncy)
-    const user = this.userService.findOneById('1234');
+    const user = this.userService.findOneById(2);
     return 'sample_token';
   }
 

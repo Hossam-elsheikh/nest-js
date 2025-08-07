@@ -82,46 +82,13 @@
                <div class="content getting-started">
                    <div class="content-data">
 
-<h1>02 Dependency Injection and Documentation</h1>
+<h1>02 Connecting to PostgreSql and TypeORM</h1>
 <h2>In This Branch</h2>
-<ul>
-<li>creating a provider/service and inject it in the controller [intramodular_dependency]</li>
-<li>moving the business logic to the service</li>
-<li>inject users service inside posts service [intermodular_dependency]</li>
-<li>using forwardRef function to apply [circular_dependency]</li>
-<li>documenting code with compodoc, as well as api with swagger</li>
-<li>validating arrays </li>
-<li>working with nested dtos and validating using ValidateNested with Type decorators</li>
-</ul>
-<hr>
+<h2>  - </h2>
 <h3>File Changes in This Branch</h3>
-<ul>
-<li>delete sec/01-Basics branch code from users.controller.ts</li>
-<li>delete some explanation comments</li>
-<li>create providers dir and users.service.ts file in users dir</li>
-<li>create posts and auth module, dtos, enums, controller and service</li>
-<li>enabling swagger in main.ts file</li>
-<li>adding &quot;doc&quot; script in package.json file </li>
-<li>creating documentation with compodoc </li>
-<li>applying doc coverage in users.service.ts file through comments</li>
-</ul>
-<hr>
+<h2>  - </h2>
 <h3>Notes</h3>
-<ul>
-<li>after spending time manually creating modules, controllers, and services, try to get used to nest cli to avoid missing imports</li>
-<li>you don&#39;t need extra steps of connecting 2 modules while dealing with orm later</li>
-<li>you can only export providers/services through exports in the module, and you import the whole module in the target module</li>
-<li>importing the whole module in the target module doesn&#39;t mean that it&#39;s all imported, it only imports the exported services only</li>
-<li>when 2 modules needs each other you can&#39;t export and import each in another, because it&#39;s circular dependncy, instead you import them with forwardRef function, and inject services with forwardRef as well</li>
-<li>nest auto generate documentation for us using [swagger] for api documentaion, and [COMPODOC] for code documentaion, after a certain config</li>
-<li>api doc is hosted with the api, code doc is generated inside the app</li>
-<li>newer versions of swagger auto group routes, so you don&#39;t need to use ApiTags to do this</li>
-<li>consider using @ApiOperation, @ApiQuery, @ApiProperty and @ApiPropertyOptional to add details to the endpoints </li>
-<li>@Type() decorator used in nested dtos validations creats an instance of the dto to match and validate once the request come, it&#39;s crucial</li>
-<li>PartialType imported from the mapped-types won&#39;t inherits swagger configs in inherited dto, so import PartialType from swagger instead</li>
-<li>code documentation with compodoc is done automatically with compodoc which relies on JSDoc.</li>
-<li>documentation coverage in compodoc will show 0% in every file because it expect you to put comments</li>
-</ul>
+<p>  - </p>
 
 
 

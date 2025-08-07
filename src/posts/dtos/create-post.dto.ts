@@ -1,9 +1,11 @@
-import { IsArray, IsEnum, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, MinLength, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, isInt, IsInt, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { postStatus } from '../enums/postStatus.enum';
 import { postType } from '../enums/postType.enum';
-import { CreatePostMetaOptionsDTO } from './create-post-meta-options.dto';
+import { CreatePostMetaOptionsDTO } from '../../meta-options/dtos/create-post-meta-options.dto';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { User } from 'src/users/user.entity';
+import { Tag } from 'src/tags/tag.entity';
 
 export class MetaOption {
   key: string;
@@ -16,6 +18,7 @@ export class CreatePostDTO {
     description:'post title'
   })
   @IsString()
+  @MaxLength(512)
   @MinLength(4)
   @IsNotEmpty()
   title: string;
@@ -32,6 +35,7 @@ export class CreatePostDTO {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(256)
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
     message:
       'A slug should be all small letters and uses only "-" with no spaces, ex: "my-url"',
@@ -63,6 +67,7 @@ export class CreatePostDTO {
     example:'https://image.com'
   })
   @IsUrl()
+  @MaxLength(1024)
   @IsOptional()
   featuredImageUrl?: string;
 
@@ -76,32 +81,18 @@ export class CreatePostDTO {
   })
   @IsOptional()
   @IsArray()
-  @IsString({each:true}) // this check each value is string in the array
-  @MinLength(3,{each:true}) // this check each value is of min 3 chars in the array
-  tags?: string[];
+  @IsInt({each:true}) // this check each value is string in the array
+  tags?: number[];
 
-  @ApiPropertyOptional({
-    type:'array',
-    required:false,
-    items:{
-      type:'object',
-      properties:{
-        key:{
-          type:'string',
-          description:'the key can be any string identifier for your meta option',
-          example:'sidebatEnabled'
-        },
-        value:{
-          type:'any',
-          description:'any value ',
-          example:true
-        }
-      }
-    }
-  })
+  @ApiPropertyOptional()
   @IsOptional()
-  @IsArray()
   @ValidateNested({each:true})
   @Type(()=>CreatePostMetaOptionsDTO) // validate each against dto
-  metaOptions?: CreatePostMetaOptionsDTO[];
+  metaOptions?: CreatePostMetaOptionsDTO ;
+
+  @ApiProperty()
+  @IsInt()
+  @IsNotEmpty()
+  authorId:number
+
 }

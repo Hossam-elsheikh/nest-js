@@ -23,11 +23,13 @@ export class CreateUserDTO {
 
   @IsEmail()
   @IsNotEmpty()
+  @MaxLength(96)
   email: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
+  @MaxLength(96)
   @Matches(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()\-_=+])[A-Za-z\d@$!%*?&#^()\-_=+]{8,}$/,
     {

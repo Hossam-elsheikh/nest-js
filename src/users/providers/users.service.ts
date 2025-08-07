@@ -1,31 +1,40 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { GetUsersParamDTO } from '../dtos/get-users-params.dto';
 import { AuthService } from 'src/auth/providers/auth.service';
+import { Repository } from 'typeorm';
+import { User } from '../user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDTO } from '../dtos/create-user.dto';
 
 
-// this comment is for compodoc declaration 
-/**
- * Class to connect to users table and perform business operations 
- */
+
 @Injectable()
 export class UsersService {
-  /**
-   * injecting auth service
-   * @param authService 
-   */
+
   constructor(
-    @Inject(forwardRef(() => AuthService)) // this is in circular dependency only
+    @Inject(forwardRef(() => AuthService)) 
     private readonly authService: AuthService,
+
+
+    // injecting user repo
+    @InjectRepository(User)
+    private userRepository:Repository<User>
   ) {}
-  // using dummy data for demonstration
-  //this comment is for compodoc declaration 
-  /**
-   * getting all users details
-   * @param getUserParamsDto user schema
-   * @param limit numbers of results
-   * @param page location of the page
-   * @returns array of users
-   */
+
+  public async createUser(createUserDto:CreateUserDTO){
+    // simplest shape, will refine later
+    const existingUser = await this.userRepository.findOne({
+      where:{
+        email:createUserDto.email
+      }
+    })
+    // handling exception later
+
+    let newUser = this.userRepository.create(createUserDto) // not saved yet in the db, can be manubiluated
+    newUser = await this.userRepository.save(newUser)
+    return newUser
+  }
+
   public findAll(
     getUserParamsDto: GetUsersParamDTO,
     limit: number,
@@ -39,16 +48,9 @@ export class UsersService {
       { firstName: 'ali', email: 'ali@ahmed.com' },
     ];
   }
-  /**
-   * find one user by it's id
-   * @param id id of the user
-   * @returns user details object
-   */
-  public findOneById(id: string) {
-    return {
-      id: '1234',
-      name: 'fathy',
-      email: 'fathy@fmail.com',
-    };
+
+  public async findOneById(id: number) {
+
+    return await this.userRepository.findOneBy({id})
   }
 }

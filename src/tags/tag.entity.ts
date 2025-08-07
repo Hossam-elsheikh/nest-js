@@ -1,0 +1,60 @@
+import { Post } from "src/posts/post.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+
+
+@Entity()
+export class Tag{
+    @PrimaryGeneratedColumn()
+    id:number 
+
+    @Column({
+        type:'varchar',
+        length:256,
+        nullable:false,
+        unique:true
+    })
+    name:string
+
+    @Column({
+        type:'varchar',
+        length:512,
+        nullable:false,
+        unique:true
+    })
+    slug:string 
+
+    @Column({
+        type:'text',
+        nullable:true
+    })
+    description?:string
+
+    @Column({
+        type:'text',
+        nullable:true
+    })
+    schema?:string
+
+     @Column({
+        type:'varchar',
+        length:1024,
+        nullable:true
+       
+    })
+    featuredImageUrl?:string
+
+    @ManyToMany(()=>Post,(post)=>post.tags,{
+        onDelete:'CASCADE' // if deleted will delete the junction table records related
+        // if not provided will yeild a forign key constraints violation error
+    })  // bi-directional many2many 
+    posts:Post[]
+
+    @CreateDateColumn() // auto generated
+    createDate:Date 
+
+    @UpdateDateColumn() // auto generated
+    updateDate:Date 
+
+    @DeleteDateColumn()   // for soft delete 
+    deletedAt:Date
+}
