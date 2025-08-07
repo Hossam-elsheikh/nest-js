@@ -29,8 +29,8 @@ if (!global.crypto) {
         synchronize: true, // warning, auto create the db on every app launch, don't use in production
         port: 5432,
         username: 'postgres',
-        password: 'Hoss0115',
-        database: 'nestjs-blog',
+        password: 'pwd1234', // your server pwd
+        database: 'nestjs-blog', // your db name
       }),
     }),
     TagsModule,

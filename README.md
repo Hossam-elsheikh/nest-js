@@ -3,7 +3,7 @@
 ## In This Branch
 
 - Connecting to the PostgreSQL database using TypeORM  
-- Using async configuration with `.env`  
+- Using async configuration 
 - Creating entity files and injecting repositories  
 - Using `autoLoadEntities`  
 - Defining a uni-directional one-to-one relationship  
