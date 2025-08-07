@@ -10,17 +10,6 @@
   - working with nested dtos and validating using ValidateNested with Type decorators
 ---
 
-### File Changes in This Branch
-  - delete sec/01-Basics branch code from users.controller.ts
-  - delete some explanation comments
-  - create providers dir and users.service.ts file in users dir
-  - create posts and auth module, dtos, enums, controller and service
-  - enabling swagger in main.ts file
-  - adding "doc" script in package.json file 
-  - creating documentation with compodoc 
-  - applying doc coverage in users.service.ts file through comments
----
-
 ### Notes
   - after spending time manually creating modules, controllers, and services, try to get used to nest cli to avoid missing imports
   - you don't need extra steps of connecting 2 modules while dealing with orm later
