@@ -1,65 +1,47 @@
-# 03 Connecting to PostgreSQL and Setting Relations with TypeORM
+# 03 — Environment Variables, Exception Handling, Transactions, and Pagination
 
 ## In This Branch
-
-- Connecting to the PostgreSQL database using TypeORM  
-- Using async configuration 
-- Creating entity files and injecting repositories  
-- Using `autoLoadEntities`  
-- Defining a uni-directional one-to-one relationship  
-- Using `cascade`  
-- Querying with eager loading  
-- Deleting related entities in uni- and bi-directional one-to-one relationships  
-- Implementing one-to-many relationships (bi-directional)  
-- Creating uni-directional and bi-directional many-to-many relationships  
-- Implementimg soft delets
+- Installing Config module to set up environment variables.
+- Replacing database details with environment variables.
+- Creating custom config files.
+- Validating environment variables with the Joi package.
+- Exception handling.
+- Transactions and TypeORM `QueryRunner`.
+- Implementing pagination.
+- Defining a unified response shape.
 
 ---
 
 ## Notes
 
-- The `synchronize` option in the TypeORM config module indicates whether the database schema should be auto-created on every app launch. **Don't use it in production** — it’s helpful only during debugging and development.
-
-- The `@PrimaryGeneratedColumn()` decorator auto-generates an incremental ID using TypeORM.
-
-- Criteria used in DTOs and entity definitions must match for proper validation and mapping.
-
-- Choose column types carefully in entity definitions — especially if you plan to switch databases. For example, the `date` type is `timestamp` in PostgreSQL and `datetime` in MySQL.
-
-- TypeORM provides many useful column decorators, such as `@DeleteDateColumn` for **soft deletes**.
-
-- `autoLoadEntities` scans modules' `imports` arrays to automatically detect and register entities for table creation.
-
-- Setting `cascade: true` in the `@OneToOne` decorator's config allows auto-creation of related records.  
-  Example: If a `Tag` is provided in a blog post request, TypeORM will create the `Tag` record first, then the `Post`, and link them automatically.
-
-- Setting `eager: true` in `@OneToOne` config allows automatic fetching of related data, without needing to manually specify relations in `find()` queries.
-
-- For deleting related entities:
-  - In **uni-directional** relationships: delete the entity holding the **foreign key (FK)** first.
-  - In **bi-directional** relationships: you can cascade deletes for convenience and code cleanliness.
-
-- A **bi-directional** relationship is created by defining an inverse side for each entity. This allows fetching related data from either side using `find()`.
-
-- The FK should always be in the entity/table that is meant to be deleted when the main entity is removed.
-
-- Using `cascade` properly can save a lot of boilerplate code and logic.
-
-- In a **one-to-many** relationship:
-  - The FK is always on the "many" side.
-  - No need to use `@JoinColumn`; `@ManyToOne` provides it automatically.
-
-- Before injecting a foreign repository inside a service, consider if the operation can be handled inside the foreign service itself — then call that service instead.
-
-- A `@ManyToMany` relationship creates a **junction table** containing the IDs from both related entities.
-
-- In **uni-directional many-to-many** relationships (e.g., posts ↔ tags):
-  - Use `@JoinTable()` in the **owning** entity (e.g., `Post`) to define the relationship.
-  - When this entity is deleted (`Post`), related junction records (`post_tags_tag`) are deleted automatically.
-  - However, deleting a `Tag` will throw a foreign key constraint error **unless** you specify `onDelete: 'CASCADE'` in the `@ManyToMany` config on the `Tag` side.
-
-- **Soft deletes**:
-  - Require a **separate endpoint**, as they often include business-specific logic.
-  - Soft deleting a record (via `@DeleteDateColumn`) **doesn't remove** it from the DB but flags it as inactive.
-  - Soft deletes **don’t affect junction tables**.
-  - TypeORM handles soft deletes internally: soft-deleted records are **excluded** from normal queries like `findAll()` unless you set `{ withDeleted: true }` in the query options.
+- NestJS uses the `.env` package behind the scenes but provides more functionality for different environments when you install the Config module.
+- Using `process.env` to access environment variables works, but using `ConfigService` offers more control and flexibility.
+- For Jest to work properly with environment variables:
+  - Adjust the `rootDir` in both the `jest` config in `package.json` and in the `jest-e2e.json` file.
+  - Add `modulePaths` in both with `[["<rootDir>"]]` as a value.
+  - This adjustment ensures environment variables work correctly in testing.
+- `NODE_ENV` is set by NestJS and shows the current running environment. Use it to set appropriate configurations in the `AppModule`.
+- The `registerAs` function in NestJS enables you to create custom config files with namespaces, which can be used in modules via the `ConfigModule`.
+- You can create configs specific to a module in large-scale apps.  
+  **Example:** If a user fetches profile data from Google using an API key, inject this config only in the `UserModule` to be used in its services.
+- Validating environment variables with Joi:
+  - Sets a clear schema for expected envs.
+  - Shows descriptive errors if any are missing.
+  - Helps new developers understand required configuration.
+- Handle exceptions in **service files** since they contain your business logic.
+- NestJS provides many built-in exception classes that cover most common cases—use them when possible.
+- **Identifying Points of Failure (POFs)** is the first step in exception handling. Common POFs include:
+  - Database interactions.
+  - Model constraints (e.g., duplicate keys).
+  - External API calls (e.g., fetching a Google profile).
+- Logging exceptions/errors to the database can be valuable for debugging and monitoring.
+- NestJS allows custom exceptions using the `HttpException` class.
+- If you’re using an **array of DTOs** as a type, validation won’t apply to nested objects automatically:
+  - Create a new DTO that uses `@ValidateNested()` and the `@Type()` decorator for proper validation.
+- It’s a **great practice** to standardize pagination as part of the **global response shape** for all list endpoints:
+  - This makes it easy for frontend integration and consistent pagination rules.
+  - See `slides/paginated-response.png` for an example response format.
+- Enable `enableImplicitConversion` in the `ValidationPipe` in `main.ts` to allow automatic type conversion, avoiding the need for manual conversion decorators in each DTO property.
+- Typically, you create a **global pagination DTO** and merge it with other query DTOs using `IntersectionType`.
+- Creating a **pagination provider** with a shared interface that defines the response shape for all paginated fetches is highly recommended.  
+  - See the `common/paginating` directory for an example of modular pagination functionality.

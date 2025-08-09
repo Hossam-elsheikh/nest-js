@@ -3,15 +3,16 @@ import { PostsService } from './providers/posts.service';
 import { CreatePostDTO } from './dtos/create-post.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PatchPostDTO } from './dtos/patch-post.dto';
+import { GetPostsDto } from './dtos/get-posts.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {
 
   }
-  @Get('{/:id}') // an optional param
-  public getPosts(){
-    return this.postsService.findAll()
+  @Get() // an optional param
+  public getPosts(@Query() postQuery:GetPostsDto){
+    return this.postsService.findAll(postQuery)
   }
 
   @ApiOperation({
@@ -31,7 +32,7 @@ export class PostsController {
   // one2many
   @Post()
   public createPostByUser(@Body() createPostDto:CreatePostDTO){
-    return this.postsService.createPostByUser(createPostDto)
+    return this.postsService.create(createPostDto)
   }
 
  @ApiOperation({

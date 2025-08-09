@@ -1,4 +1,9 @@
-import { Body, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users.service';
 import { CreatePostDTO } from '../dtos/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +12,9 @@ import { Repository } from 'typeorm';
 import { Post } from '../post.entity';
 import { TagService } from 'src/tags/providers/tag.service';
 import { PatchPostDTO } from '../dtos/patch-post.dto';
+import { GetPostsDto } from '../dtos/get-posts.dto';
+import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
+import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
 
 @Injectable()
 export class PostsService {
@@ -18,33 +26,11 @@ export class PostsService {
     private readonly postRepository: Repository<Post>,
     @InjectRepository(MetaOption)
     private readonly metaOptionRepository: Repository<MetaOption>,
+
+    private readonly paginationProvider: PaginationProvider,
   ) {}
 
-  // one 2 one deomnstration of post and metaoption relationship
-  public async createPost(@Body() createPostDto: CreatePostDTO) {
-    // without cascade you would do these steps
-    // 1-createing metaoption first if provided
-    // let metaOption = createPostDto.metaOptions
-    //   ? this.metaOptionRepository.create(createPostDto.metaOptions)
-    //   : null;
-    // 2-save if created
-    // if(metaOption){
-    //   await this.metaOptionRepository.save(metaOption)
-    // }
-    // 3-create the post
-    // let post = this.postRepository.create(createPostDto)
-    // 4-add metaoptions if provided
-    // if(metaOption){
-    //   post.metaOptions = metaOption
-    // }
-    // but with the cascade enabled it's all done behind the scenes
-    // let post = this.postRepository.create(createPostDto);
-    // return await this.postRepository.save(post);
-  }
-
-  // one 2 many demonstration of user and post relationship
-
-  public async createPostByUser(@Body() createPostDto: CreatePostDTO) {
+  public async create(@Body() createPostDto: CreatePostDTO) {
     // find the user from the user service
     let author = await this.userService.findOneById(createPostDto.authorId);
 
@@ -61,30 +47,26 @@ export class PostsService {
     return 'user not found';
   }
 
-  public async findAll() {
-    let posts = await this.postRepository.find({
-      // instead of this, set eager in the @onetoone decorator config
-      // relations:{
-      //   metaOptions:true, // to fetch metaoptions along with the post
-      //   author:true
-      //   tags:true
-      // }
-    });
+  public async findAll(postQuery: GetPostsDto): Promise<Paginated<Post>> {
+    // before using pagination provider
+    // let posts = await this.postRepository.find({
+    //   skip:(postQuery.page||1-1) * (postQuery.limit||10),
+    //   take:postQuery.limit,    // take n posts at a time
+
+    // });
+    // return posts;
+
+    let posts = await this.paginationProvider.paginateQuery(
+      {
+        limit: postQuery.limit,
+        page: postQuery.page,
+      },
+      this.postRepository,
+    );
     return posts;
   }
 
   public async delete(id: number) {
-    // uni-directional one2one
-    // find the post
-    // let post = await this.postRepository.findOneBy({id})
-
-    // delete the post first
-    // await this.postRepository.delete({id})
-
-    // delete the metaoption
-    // await this.metaOptionRepository.delete({id:post?.metaOptions?.id})
-
-    // bi-directional one2one > cascade delete
     await this.postRepository.delete(id); // this will delete the post and the metaoption related to it
 
     // confirmation
@@ -93,10 +75,36 @@ export class PostsService {
 
   public async update(patchPostDto: PatchPostDTO) {
     // find the tags
-    let tags = await this.tagService.findMultibleTags(patchPostDto.tags || []);
+    let tags;
+    if (patchPostDto.tags) {
+      try {
+        tags = await this.tagService.findMultibleTags(patchPostDto.tags || []);
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not connect to database, please try again later',
+        );
+      }
+    }
 
+    if (!tags || tags.length !== patchPostDto.tags) {
+      throw new BadRequestException(
+        'some tags are not in the databse, please check your tags ids',
+      );
+    }
+
+    let post;
     // find the post
-    let post = await this.postRepository.findOneBy({ id: patchPostDto.id });
+    try {
+      post = await this.postRepository.findOneBy({ id: patchPostDto.id });
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Could not connect to database, please try again later',
+      );
+    }
+
+    if (!post) {
+      throw new BadRequestException('no posts found with the id provided!');
+    }
 
     // update the properties
     if (post) {
@@ -105,11 +113,20 @@ export class PostsService {
       post.slug = patchPostDto.slug ?? post.slug;
       post.status = patchPostDto.status ?? post.status;
       // assign the new tags
-      post.tags = tags
-      return await this.postRepository.save(post)
+      if (tags) {
+        post.tags = tags;
+      }
+
+      try {
+        await this.postRepository.save(post);
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not connect to database, please try again later',
+        );
+      }
     }
 
-    return 'post not found'
+    return { message: 'Post updated', post };
 
     // save the post
   }
