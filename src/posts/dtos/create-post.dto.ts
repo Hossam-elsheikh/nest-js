@@ -77,12 +77,12 @@ export class CreatePostDTO {
   publishOn?: Date;
 
   @ApiPropertyOptional({
-    example:['one1','two2']
+    example:[1,2]
   })
   @IsOptional()
   @IsArray()
   @IsInt({each:true}) // this check each value is string in the array
-  tags?: number[];
+  tags?: number[] ;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -90,9 +90,5 @@ export class CreatePostDTO {
   @Type(()=>CreatePostMetaOptionsDTO) // validate each against dto
   metaOptions?: CreatePostMetaOptionsDTO ;
 
-  @ApiProperty()
-  @IsInt()
-  @IsNotEmpty()
-  authorId:number
 
 }

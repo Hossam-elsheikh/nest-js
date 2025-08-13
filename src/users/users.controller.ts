@@ -7,22 +7,29 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { GetUsersParamDTO } from './dtos/get-users-params.dto';
 import { UsersService } from './providers/users.service';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateUserDTO } from './dtos/create-user.dto';
 import { CreateManyUsersDto } from './dtos/create-many-users.dto';
+import { SigninDTO } from 'src/auth/dtos/signin.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token/access-token.guard';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @Auth(AuthType.None)
   @Post()
   public CreateUser(@Body() createUserDto: CreateUserDTO) {
     return this.userService.createUser(createUserDto); // this not needed to be async
   }
 
+  // @UseGuards(AccessTokenGuard)
   @Post('create-many')
   public createManyUsers(@Body() createUsersDto: CreateManyUsersDto) {
     return this.userService.createMany(createUsersDto);
@@ -36,4 +43,6 @@ export class UsersController {
   ) {
     return this.userService.findAll(getUserParamDto, limit, page);
   }
+
+  
 }

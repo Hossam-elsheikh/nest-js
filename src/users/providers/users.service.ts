@@ -19,6 +19,11 @@ import { response } from 'express';
 import { error } from 'console';
 import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
+import { CreateUserProvider } from './create-user.provider';
+import { FindOneByEmailProvider } from './find-one-by-email.provider';
+import { FindOneByGoogleIdProvider } from './find-one-by-google-id.provider';
+import { GoogleUser } from '../interfaces/google-user.interface';
+import { CreateGoogleUserProvider } from './create-google-user.provider';
 
 @Injectable()
 export class UsersService {
@@ -34,45 +39,15 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    // injecting the datasource
-    private readonly dataSource: DataSource,
-
-    private readonly usersCreateManyProvider: UsersCreateManyProvider
+    private readonly usersCreateManyProvider: UsersCreateManyProvider,
+    private readonly createUserProvider:CreateUserProvider,
+    private readonly findOneByEmailProvider:FindOneByEmailProvider,
+    private readonly findOneByGoogleIdProvider:FindOneByGoogleIdProvider,
+    private readonly createGoogleUserProvider:CreateGoogleUserProvider
   ) {}
 
   public async createUser(createUserDto: CreateUserDTO) {
-    let existingUser;
-    // handling exception duplicate key
-    try {
-      existingUser = await this.userRepository.findOne({
-        where: {
-          email: createUserDto.email,
-        },
-      });
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Unable to process your request at the moment!, please try again later',
-        { description: 'Error connecting to the database' },
-      );
-    }
-
-    if (existingUser) {
-      throw new BadRequestException(
-        'The user already exist, please check your email',
-      );
-    }
-
-    let newUser = this.userRepository.create(createUserDto);
-
-    try {
-      newUser = await this.userRepository.save(newUser);
-      return newUser;
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Unable to process your request at the moment!, please try again later',
-        { description: 'Error connecting to the database' },
-      );
-    }
+    return this.createUserProvider.createUser(createUserDto)
   }
 
 
@@ -113,5 +88,17 @@ export class UsersService {
 
   public async createMany(createManyUsersDto:CreateManyUsersDto){
     return await this.usersCreateManyProvider.createMany(createManyUsersDto)
+  }
+
+  public async findOneByEmail(email:string){
+    return this.findOneByEmailProvider.findUserByEmail(email)
+  }
+
+  public async findOneByGoogleId(googleId:string){
+      return await this.findOneByGoogleIdProvider.findOneByGoogleId(googleId)
+  }
+
+  public async createGoogleUser(googleUser:GoogleUser){ // this method doen't has a controller method, so we build GoogleUser as interface not dto,  
+    return await this.createGoogleUserProvider.createGoogleUser(googleUser)
   }
 }

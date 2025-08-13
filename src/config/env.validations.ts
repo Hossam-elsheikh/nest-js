@@ -11,4 +11,13 @@ export default joi.object({
   DB_NAME: joi.string().required(),
   DB_USER: joi.string().required(),
   PROFILE_API_KEY: joi.string().required(),
+  JWT_SECRET:joi.string().required(),
+  JWT_TOKEN_AUDIENCE:joi.string().required(),
+  JWT_TOKEN_ISSUER:joi.string().required(),
+  JWT_ACCESS_TOKEN_TTL:joi.number().required(),
+  JWT_REFRESH_TOKEN_TTL:joi.number().required(),
+  GOOGLE_CLIENT_ID:joi.string().required(),
+  GOOGLE_CLIENT_SECRET:joi.string().required()
 });
+
+

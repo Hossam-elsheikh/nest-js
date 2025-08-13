@@ -1,19 +1,23 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users.service';
+import { SigninDTO } from '../dtos/signin.dto';
+import { SigninProvider } from './signin.provider';
+import { RefreshTokenDto } from '../dtos/refesh-token.dto';
+import { RefreshTokenProvider } from './refresh-token.provider';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(forwardRef(() => UsersService)) // this is in circular dependency only
+    @Inject(forwardRef(() => UsersService))
     private readonly userService: UsersService,
+    private readonly signinProvider: SigninProvider,
+    private readonly refreshTokenProvider:RefreshTokenProvider
   ) {}
-  public login(email: string, pwd: string, id: string) {
-    // we need user service here and auth service there in user service (circular dependedncy)
-    const user = this.userService.findOneById(2);
-    return 'sample_token';
+  public async login(signinDto: SigninDTO) {
+    return await this.signinProvider.signIn(signinDto);
   }
 
-  public isAuth() {
-    return true;
+  public async refreshTokens(refreshTokenDto:RefreshTokenDto) {
+    return await this.refreshTokenProvider.refreshTokens(refreshTokenDto)
   }
 }

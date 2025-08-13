@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   RequestTimeoutException,
 } from '@nestjs/common';
@@ -7,10 +9,14 @@ import { CreateUserDTO } from '../dtos/create-user.dto';
 import { User } from '../user.entity';
 import { DataSource } from 'typeorm';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
+import { HashingProvider } from 'src/auth/providers/hashing.provider';
 
 @Injectable()
 export class UsersCreateManyProvider {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+
+  ) {}
   // creating a transaction through creating multible users
   public async createMany(createManyUsersDto: CreateManyUsersDto) {
     let newUsers: User[] = [];
@@ -55,6 +61,6 @@ export class UsersCreateManyProvider {
         });
       }
     }
-    return {users:newUsers,message:'users created successfully!'}
+    return { users: newUsers, message: 'users created successfully!' };
   }
 }

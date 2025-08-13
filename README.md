@@ -1,47 +1,85 @@
-# 03 — Environment Variables, Exception Handling, Transactions, and Pagination
+# 03 — Authentication
 
 ## In This Branch
-- Installing Config module to set up environment variables.
-- Replacing database details with environment variables.
-- Creating custom config files.
-- Validating environment variables with the Joi package.
-- Exception handling.
-- Transactions and TypeORM `QueryRunner`.
-- Implementing pagination.
-- Defining a unified response shape.
+- Hashing and salting passwords using **bcrypt**.
+- Creating hashing providers.
+- User signup and signin flows.
+- JSON Web Tokens (JWT).
+- Guards and creating `AccessTokenGuard`.
+- Custom decorators (metadata, parameter decorators).
+- Refresh tokens.
+- Google authentication.
+- Enabling CORS.
 
 ---
 
 ## Notes
 
-- NestJS uses the `.env` package behind the scenes but provides more functionality for different environments when you install the Config module.
-- Using `process.env` to access environment variables works, but using `ConfigService` offers more control and flexibility.
-- For Jest to work properly with environment variables:
-  - Adjust the `rootDir` in both the `jest` config in `package.json` and in the `jest-e2e.json` file.
-  - Add `modulePaths` in both with `[["<rootDir>"]]` as a value.
-  - This adjustment ensures environment variables work correctly in testing.
-- `NODE_ENV` is set by NestJS and shows the current running environment. Use it to set appropriate configurations in the `AppModule`.
-- The `registerAs` function in NestJS enables you to create custom config files with namespaces, which can be used in modules via the `ConfigModule`.
-- You can create configs specific to a module in large-scale apps.  
-  **Example:** If a user fetches profile data from Google using an API key, inject this config only in the `UserModule` to be used in its services.
-- Validating environment variables with Joi:
-  - Sets a clear schema for expected envs.
-  - Shows descriptive errors if any are missing.
-  - Helps new developers understand required configuration.
-- Handle exceptions in **service files** since they contain your business logic.
-- NestJS provides many built-in exception classes that cover most common cases—use them when possible.
-- **Identifying Points of Failure (POFs)** is the first step in exception handling. Common POFs include:
-  - Database interactions.
-  - Model constraints (e.g., duplicate keys).
-  - External API calls (e.g., fetching a Google profile).
-- Logging exceptions/errors to the database can be valuable for debugging and monitoring.
-- NestJS allows custom exceptions using the `HttpException` class.
-- If you’re using an **array of DTOs** as a type, validation won’t apply to nested objects automatically:
-  - Create a new DTO that uses `@ValidateNested()` and the `@Type()` decorator for proper validation.
-- It’s a **great practice** to standardize pagination as part of the **global response shape** for all list endpoints:
-  - This makes it easy for frontend integration and consistent pagination rules.
-  - See `slides/paginated-response.png` for an example response format.
-- Enable `enableImplicitConversion` in the `ValidationPipe` in `main.ts` to allow automatic type conversion, avoiding the need for manual conversion decorators in each DTO property.
-- Typically, you create a **global pagination DTO** and merge it with other query DTOs using `IntersectionType`.
-- Creating a **pagination provider** with a shared interface that defines the response shape for all paginated fetches is highly recommended.  
-  - See the `common/paginating` directory for an example of modular pagination functionality.
+- Always **add a salt** when hashing passwords.  
+  See the hash components diagram in `slides/hashed.png`.
+- In NestJS, an **abstract class** is often used for something like a hashing provider because it defines a contract for multiple hashing implementations without tying the app to a specific library.  
+  If you hard-code bcrypt everywhere, replacing it later becomes painful.
+- To change the **HTTP success code** sent by a controller method, use `@HttpCode()`:
+  ```ts
+  @HttpCode(HttpStatus.OK)
+  signin() { ... }
+
+For example, you might return 200 instead of the default 201 after a signin.
+
+    JWT structure:
+
+        Header → algorithm & token type.
+
+        Payload → claims (non-sensitive data).
+
+        Signature → verifies the token hasn’t been altered.
+
+    The payload is not encrypted—only base64 encoded—so do not store sensitive data inside.
+
+    Any change to the payload or options will change the signature, invalidating the token.
+
+    Guards can be applied:
+
+        Globally via:
+
+    { provide: APP_GUARD, useClass: AccessTokenGuard }
+
+    If applied in one module, it will still affect others because APP_GUARD is global in scope.
+
+    Locally at the controller or route level for module-specific protection.
+
+- Decorators are all about metadata—they attach additional information to classes, methods, or parameters.
+
+- To exclude routes from a global guard:
+
+    Create a custom decorator that sets a metadata flag.
+
+    Modify or build a guard to read this metadata and skip protection for flagged routes.
+
+- How Guards Work:
+
+    Authentication Guard → validates a user's access token.
+
+    Authorization Logic → grants or denies access based on the authentication result.
+
+    Role Management → optionally checks user roles for role-based access control.
+
+    Global Guards → apply guard logic to all requests in the application.
+
+- Refresh tokens should have a minimal payload—usually just the sub (user ID).
+
+- Google Authentication Flow:
+
+    Frontend requests Google login.
+
+    Google completes login and sends a LoginTicket JWT to the frontend.
+
+    Frontend sends this token to your NestJS backend.
+
+    Backend verifies the token, creates or signs in the user, then issues access and refresh tokens.
+
+- The frontend requires only the Client ID, not the Client Secret (which stays in the backend).
+
+- Install the Google Auth library: npm install google-auth-library
+
+- Enable CORS before starting the server: app.enableCors();

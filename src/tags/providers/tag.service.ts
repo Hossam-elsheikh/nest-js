@@ -23,7 +23,6 @@ export class TagService {
         id: In(tags), // returns all the records that matches the arr of ids
       },
     });
-
     return results;
   }
 
@@ -34,10 +33,9 @@ export class TagService {
   }
 
   // this method for soft delete
-  public async softRemove(id:number){
+  public async softRemove(id: number) {
     // soft delete just create a timestapm and not removing from the db
-    await this.tagRepository.softDelete(id)
+    await this.tagRepository.softDelete(id);
     return { deleted: true, id };
-
   }
 }
