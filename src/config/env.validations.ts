@@ -17,7 +17,17 @@ export default joi.object({
   JWT_ACCESS_TOKEN_TTL:joi.number().required(),
   JWT_REFRESH_TOKEN_TTL:joi.number().required(),
   GOOGLE_CLIENT_ID:joi.string().required(),
-  GOOGLE_CLIENT_SECRET:joi.string().required()
+  GOOGLE_CLIENT_SECRET:joi.string().required(),
+  API_VERSION:joi.string().required(),
+  S3_BUCKET_NAME:joi.string().required(),
+  S3_BUCKET_REGION:joi.string().required(),
+  S3_ACCESS_KEY:joi.string().required(),
+  S3_SECRET_KEY:joi.string().required(),
+  CLOUDFRONT_DISTRO_URL:joi.string().required(),
+  MAIL_HOST:joi.string().required(),
+  SMTP_USERNAME:joi.string().required(),
+  SMTP_PASSWORD:joi.string().required()
+
 });
 
 

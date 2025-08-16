@@ -1,85 +1,47 @@
-# 03 — Authentication
+# 03 — Serialization, File uploads and SMTP
 
 ## In This Branch
-- Hashing and salting passwords using **bcrypt**.
-- Creating hashing providers.
-- User signup and signin flows.
-- JSON Web Tokens (JWT).
-- Guards and creating `AccessTokenGuard`.
-- Custom decorators (metadata, parameter decorators).
-- Refresh tokens.
-- Google authentication.
-- Enabling CORS.
+- Serialization and interceptors  
+- File uploads  
+- Setup S3 and CloudFront  
+- Uploading a file to an S3 bucket and saving the record in DB  
+- Creating Emails service  
+- EJS template engine  
 
 ---
 
 ## Notes
 
-- Always **add a salt** when hashing passwords.  
-  See the hash components diagram in `slides/hashed.png`.
-- In NestJS, an **abstract class** is often used for something like a hashing provider because it defines a contract for multiple hashing implementations without tying the app to a specific library.  
-  If you hard-code bcrypt everywhere, replacing it later becomes painful.
-- To change the **HTTP success code** sent by a controller method, use `@HttpCode()`:
-  ```ts
-  @HttpCode(HttpStatus.OK)
-  signin() { ... }
+- **Purpose of Interceptors:**
+  - Bind extra logic before/after method execution.
+  - Transform the result returned or exception thrown from a function.
+  - Extend the basic function behavior.
+  - Override a function based on specific conditions (e.g., caching).
+  
+- NestJS provides built-in interceptors such as `ClassSerializerInterceptor`:
+  - Apply it using `@UseInterceptors(ClassSerializerInterceptor)` on a controller.
+  - Add `@Exclude()` on entity fields you want to hide from the serialized response.
+  - You can later create **custom interceptors** with specific behaviors as needed.
 
-For example, you might return 200 instead of the default 201 after a signin.
+- **Global interceptors** are great for:
+  - Unifying response shapes across the app.
+  - Sending additional metadata with every API response (e.g., `api-version`).
+  - Create one using the Nest CLI, then register it in `app.module.ts` with:
+    ```ts
+    { provide: APP_INTERCEPTOR, useClass: YourInterceptor }
+    ```
+    This way, it intercepts and has access to all outgoing responses.
 
-    JWT structure:
+- When sending `multipart/form-data`, NestJS provides `FileInterceptor()` to extract the incoming file inside route handlers.
 
-        Header → algorithm & token type.
+- **CloudFront CDN** distributes files stored in S3 buckets.  
+  After uploading to S3, save the **CloudFront URL** in the database for faster delivery.  
+  Required packages → `npm i aws-sdk` and `npm i -D @types/multer`
 
-        Payload → claims (non-sensitive data).
+- If uploaded images are not previewing in the browser, it's likely because you didn’t set the `ContentType` MIME while calling the S3 `.upload()` method.
 
-        Signature → verifies the token hasn’t been altered.
+- To create a **mail service**:
+  ```bash
+  npm i @nestjs-modules/mailer nodemailer ejs
 
-    The payload is not encrypted—only base64 encoded—so do not store sensitive data inside.
-
-    Any change to the payload or options will change the signature, invalidating the token.
-
-    Guards can be applied:
-
-        Globally via:
-
-    { provide: APP_GUARD, useClass: AccessTokenGuard }
-
-    If applied in one module, it will still affect others because APP_GUARD is global in scope.
-
-    Locally at the controller or route level for module-specific protection.
-
-- Decorators are all about metadata—they attach additional information to classes, methods, or parameters.
-
-- To exclude routes from a global guard:
-
-    Create a custom decorator that sets a metadata flag.
-
-    Modify or build a guard to read this metadata and skip protection for flagged routes.
-
-- How Guards Work:
-
-    Authentication Guard → validates a user's access token.
-
-    Authorization Logic → grants or denies access based on the authentication result.
-
-    Role Management → optionally checks user roles for role-based access control.
-
-    Global Guards → apply guard logic to all requests in the application.
-
-- Refresh tokens should have a minimal payload—usually just the sub (user ID).
-
-- Google Authentication Flow:
-
-    Frontend requests Google login.
-
-    Google completes login and sends a LoginTicket JWT to the frontend.
-
-    Frontend sends this token to your NestJS backend.
-
-    Backend verifies the token, creates or signs in the user, then issues access and refresh tokens.
-
-- The frontend requires only the Client ID, not the Client Secret (which stays in the backend).
-
-- Install the Google Auth library: npm install google-auth-library
-
-- Enable CORS before starting the server: app.enableCors();
+- be aware that templates directory not compiled by nest, and to do so you have to add assets array to nest-cli.json file in compiler options: "assets":[{"include":"./mail/template","outDir":"dist/"}]
