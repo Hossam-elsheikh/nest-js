@@ -17,7 +17,6 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
-    console.log(process.env.NODE_ENV); // this is already exist and used by jest and it's value in test mode is test
     return request(app.getHttpServer())
       .get('/')
       .expect(404)

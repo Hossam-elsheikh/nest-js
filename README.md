@@ -1,47 +1,22 @@
-# 03 — Serialization, File uploads and SMTP
+# 03 — Unit and E2E Testing
 
 ## In This Branch
-- Serialization and interceptors  
-- File uploads  
-- Setup S3 and CloudFront  
-- Uploading a file to an S3 bucket and saving the record in DB  
-- Creating Emails service  
-- EJS template engine  
-
+- Unit Testing 
+- e2e Testing
 ---
 
 ## Notes
 
-- **Purpose of Interceptors:**
-  - Bind extra logic before/after method execution.
-  - Transform the result returned or exception thrown from a function.
-  - Extend the basic function behavior.
-  - Override a function based on specific conditions (e.g., caching).
-  
-- NestJS provides built-in interceptors such as `ClassSerializerInterceptor`:
-  - Apply it using `@UseInterceptors(ClassSerializerInterceptor)` on a controller.
-  - Add `@Exclude()` on entity fields you want to hide from the serialized response.
-  - You can later create **custom interceptors** with specific behaviors as needed.
-
-- **Global interceptors** are great for:
-  - Unifying response shapes across the app.
-  - Sending additional metadata with every API response (e.g., `api-version`).
-  - Create one using the Nest CLI, then register it in `app.module.ts` with:
-    ```ts
-    { provide: APP_INTERCEPTOR, useClass: YourInterceptor }
-    ```
-    This way, it intercepts and has access to all outgoing responses.
-
-- When sending `multipart/form-data`, NestJS provides `FileInterceptor()` to extract the incoming file inside route handlers.
-
-- **CloudFront CDN** distributes files stored in S3 buckets.  
-  After uploading to S3, save the **CloudFront URL** in the database for faster delivery.  
-  Required packages → `npm i aws-sdk` and `npm i -D @types/multer`
-
-- If uploaded images are not previewing in the browser, it's likely because you didn’t set the `ContentType` MIME while calling the S3 `.upload()` method.
-
-- To create a **mail service**:
-  ```bash
-  npm i @nestjs-modules/mailer nodemailer ejs
-
-- be aware that templates directory not compiled by nest, and to do so you have to add assets array to nest-cli.json file in compiler options: "assets":[{"include":"./mail/template","outDir":"dist/"}]
+- nestjs has a tight integration with jest testing library
+- insure that you have the correct configuration in the package.json jest object, and in the jest-e2e.json file in test directory
+- beforeEach runs before each test, and beforeAll runs before all tests, and as well as afterEach and afterAll
+- use filter to run tests on a particular file (eg: npm run test:watch -- app.controller), here we've a name filter
+- jest provides us with a lot of functionalities out of the box for writing mocks as well as pipes
+- Importance of End-to-End Testing: It emphasizes the holistic approach of verifying that API endpoints return the correct data and perform as expected.
+- e2e tests should live in the test directory
+- it's recomended that you use the same db type you're using in production, to include the features, you create a test database and use it in e2e tests
+- use it.todo to remind yourself of the test that you should write 
+- unit test improve the quality of your code, while e2e test insures that your app behaves the way it should behave, if you're short in time and you have to choose between them, choose e2e
+- you should clear test db between tests, to prevent conflicts
+- superTest is a library that lets you run the server inside the test
+- Faker is useful for generating fake data to test easily

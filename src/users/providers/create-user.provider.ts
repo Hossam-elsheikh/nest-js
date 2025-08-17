@@ -34,8 +34,7 @@ export class CreateUserProvider {
       });
     } catch (error) {
       throw new RequestTimeoutException(
-        'Unable to process your request at the moment!, please try again later',
-        { description: 'Error connecting to the database' },
+        'something went wrong',
       );
     }
 
@@ -52,15 +51,15 @@ export class CreateUserProvider {
 
     try {
       newUser = await this.userRepository.save(newUser);
-      try {
-        console.log('before sending');
+      // try {
+      //   console.log('before sending');
         
-        await this.mailService.sendUserWelcome(newUser);
-        console.log('email sent');
+      //   await this.mailService.sendUserWelcome(newUser);
+      //   console.log('email sent');
         
-      } catch (error) {
-        throw new RequestTimeoutException(error);
-      }
+      // } catch (error) {
+      //   throw new RequestTimeoutException(error);
+      // }
       return newUser;
     } catch (error) {
       throw new RequestTimeoutException(

@@ -19,21 +19,15 @@ import { response } from 'express';
 import { error } from 'console';
 import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
-import { CreateUserProvider } from './create-user.provider';
 import { FindOneByEmailProvider } from './find-one-by-email.provider';
 import { FindOneByGoogleIdProvider } from './find-one-by-google-id.provider';
 import { GoogleUser } from '../interfaces/google-user.interface';
 import { CreateGoogleUserProvider } from './create-google-user.provider';
+import { CreateUserProvider } from './create-user.provider';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject(forwardRef(() => AuthService))
-    private readonly authService: AuthService,
-
-    // injecting the profile config
-    @Inject(profileConfig.KEY)
-    private readonly profileConfiguration: ConfigType<typeof profileConfig>,
 
     // injecting user repo
     @InjectRepository(User)
@@ -47,7 +41,7 @@ export class UsersService {
   ) {}
 
   public async createUser(createUserDto: CreateUserDTO) {
-    return this.createUserProvider.createUser(createUserDto)
+    return await this.createUserProvider.createUser(createUserDto)
   }
 
 
